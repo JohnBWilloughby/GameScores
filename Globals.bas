@@ -45,7 +45,7 @@ Public Sub ConnecttoMYSQL()
 'Create a connection to the database
 Set DBCon = New ADODB.Connection
 ' DBCon.CursorLocation = adUseClient
-DBCon.ConnectionString = "DRIVER={MySQL ODBC 5.2 ANSI Driver}; Server=10.10.10.169;Database=sbbs;User=sbbsrw;Password=sbbsrw;Option=" & 1 + 2 + 8 + 32 + 2048 + 16384  ' 3"
+DBCon.ConnectionString = "DRIVER={MySQL ODBC 5.2 ANSI Driver}; Server=10.10.10.176;Database=sbbs;User=sbbsrw;Password=sbbsrw;Option=" & 1 + 2 + 8 + 32 + 2048 + 16384  ' 3"
 DBCon.Open
 
 
