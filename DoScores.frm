@@ -604,7 +604,7 @@ Public Sub AnalyzeBRE10(fileName As String)
     OutputtoDbgview ("Begin Analyze BRE League 10")
     Lines = ""
     intEmpFileNbr = FreeFile
-
+    
     Open fileName For Input As #intEmpFileNbr
     Input #intEmpFileNbr, Line1
     Input #intEmpFileNbr, Line1
@@ -613,10 +613,12 @@ Public Sub AnalyzeBRE10(fileName As String)
     Input #intEmpFileNbr, Line1
     Input #intEmpFileNbr, Line1
     
+    OutputtoDbgview ("Before Do Untill to read scores  - BRE League 10")
     Do Until EOF(intEmpFileNbr)
+    OutputtoDbgview ("Start of Do Until, to read scores  - BRE League 10")
         
         Input #intEmpFileNbr, Lines
-        If InStr(Lines, "       ") <> 0 Then
+        If InStr(Lines, "       ") = 0 Then
             Close #intEmpFileNbr
             Exit Sub
         End If
@@ -650,6 +652,12 @@ Public Sub AnalyzeBRE10(fileName As String)
     Loop
     
     Close #intEmpFileNbr
+    
+     On Error GoTo 0
+   Exit Sub
+MyErrorHandler:
+   MsgBox "Error " & Err.Number & " (" & Err.Description & ") at line " & Erl
+   
     
 End Sub
 
