@@ -24,6 +24,8 @@ Private Declare Sub OutputtoDbgview Lib "kernel32" _
 
 Private Sub Form_Load()
    Form1.Visible = False
+   'To DO:
+   ' Check the scores to see if there is a blank link and not the score, if not will error out.
  
     ' Arrow Bridge Game Scores
     OutputtoDbgview ("Starting Arrow Bridge Scores")
@@ -31,6 +33,14 @@ Private Sub Form_Load()
     xDestFile = "C:\temp\TOPCHARS.ABR"
     FileCopy xSourceFile, xDestFile
     AnalyzeArrowB (xDestFile)
+    Kill (xDestFile)
+   
+    ' Arrow Bridge ][ Game Scores
+    OutputtoDbgview ("Starting Arrow Bridge Scores")
+    xSourceFile = "C:\sbbs\xtrn\Abridge2\TOPCHARS.ABR"
+    xDestFile = "C:\temp\TOPCHARS.ABR"
+    FileCopy xSourceFile, xDestFile
+    AnalyzeArrowB2 (xDestFile)
     Kill (xDestFile)
    
    ' NY2008 Games Scores
@@ -204,6 +214,53 @@ Public Sub AnalyzeArrowB(fileName As String)
     Close #intEmpFileNbr
     
 End Sub
+
+Public Sub AnalyzeArrowB2(fileName As String)
+    OutputtoDbgview ("Begin Analyze Arror Bridge ][")
+    Dim intEmpFileNbr As Integer
+    
+    Lines = ""
+    intEmpFileNbr = FreeFile
+
+    Open fileName For Input As #intEmpFileNbr
+    Do Until EOF(intEmpFileNbr)
+        
+        Input #intEmpFileNbr, Line1
+        Input #intEmpFileNbr, Line2
+        Input #intEmpFileNbr, Line3
+        Input #intEmpFileNbr, Line4
+        Lines = Line1 & " " & Line2 & " " & Line3 & " " & Line4
+    '    Debug.Print Lines
+        
+    strArray = Split(Lines, " ")
+    sCharName = strArray(0)
+    If InStr(LCase(sCharName), "[none]") <> 0 Then
+        Close #intEmpFileNbr
+        Exit Sub
+    End If
+    
+    sLevel = strArray(1)
+    sType = strArray(2)
+    sLastPlayed = strArray(3)
+    
+    'Here is where we save to the mySQL database
+   
+    Call WriteArrowB2toMySQL
+    
+    sCharName = ""
+    sLevel = ""
+    sType = ""
+    sLastPlayed = ""
+        
+    Loop
+    
+    Close #intEmpFileNbr
+    
+End Sub
+
+
+
+
 Public Sub AnalyzeNY2008(fileName As String)
     
     OutputtoDbgview ("Begin Analyze NY2008")
@@ -968,6 +1025,68 @@ Set DBQuery = New ADODB.Recordset
 DBQuery.Open "SELECT Count(*) as RSCount from arrowb WHERE abchar =" & "'" & sCharName & "';", DBCon, adOpenStatic, adLockOptimistic, adCmdText
 
 Rs.Open "SELECT * from arrowb WHERE abchar =" & "'" & sCharName & "';", DBCon, adOpenDynamic, adLockOptimistic, adCmdText
+
+'Executes the query-command and puts the result into Rs (recordset)
+If DBQuery!RSCount = 0 Then
+        
+    Rs.AddNew
+    Rs!abchar = sCharName
+    Rs!Level = sLevel
+    Rs!Type = sType
+    Rs!lastplayed = sLastPlayed
+              
+    Rs.Update
+    Rs.Close
+        
+Else
+        
+    If Rs!abchar = sCharName Then
+        'no update
+    Else
+        Rs!abchar = sCharName
+    End If
+        
+    If Rs!Level = sLevel Then
+        ' no update
+    Else
+        Rs!Level = sLevel
+    End If
+        
+    If Rs!Type = sType Then
+        ' no update
+    Else
+        Rs!Type = sType
+    End If
+    
+    If Rs!lastplayed = sLastPlayed Then
+        'no update
+    Else
+        Rs!lasatplayed = sLastPlayed
+    End If
+    
+        
+    Rs.Update
+    Rs.Close
+                
+End If
+    DBCon.Close
+    Set Rs = Nothing
+    Set DBCon = Nothing
+    
+End Sub
+
+Public Sub WriteArrowBtoMySQL()
+
+OutputtoDbgview ("Begin Write to SQL Arrow Bridge")
+Call ConnecttoMYSQL
+
+Set Rs = New ADODB.Recordset
+Rs.CursorLocation = adUseServer
+Set DBQuery = New ADODB.Recordset
+
+DBQuery.Open "SELECT Count(*) as RSCount from arrowb2 WHERE abchar =" & "'" & sCharName & "';", DBCon, adOpenStatic, adLockOptimistic, adCmdText
+
+Rs.Open "SELECT * from arrowb2 WHERE abchar =" & "'" & sCharName & "';", DBCon, adOpenDynamic, adLockOptimistic, adCmdText
 
 'Executes the query-command and puts the result into Rs (recordset)
 If DBQuery!RSCount = 0 Then
