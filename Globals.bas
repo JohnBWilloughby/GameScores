@@ -12,7 +12,16 @@ Global sCEO         As String
 Global sCorpExp     As String
 Global sCorpAlign   As String
 Global sLastPlayed  As String
+Global sLastPlayed2 As String
 Global sDate        As String
+Global sKills       As String
+Global sExp         As String
+Global sStatus      As String
+
+Global Plvl         As String
+Global Slvl         As String
+Global dmModName    As String
+Global dmLastPlay   As String
 
 Global xSourceFile  As String
 Global xDestFile    As String
@@ -30,6 +39,7 @@ Global LineB As String
 Global Lines As String
 Global strTest As String
 Global strArray() As String
+Global lvlArray() As String
 Global intCount As Integer
 
 

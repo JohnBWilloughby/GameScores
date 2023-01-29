@@ -28,20 +28,66 @@ Private Sub Form_Load()
    ' Check the scores to see if there is a blank link and not the score, if not will error out.
  
     ' Arrow Bridge Game Scores
-    OutputtoDbgview ("Starting Arrow Bridge Scores")
-    xSourceFile = "C:\sbbs\xtrn\Abridge\TOPCHARS.ABR"
-    xDestFile = "C:\temp\TOPCHARS.ABR"
-    FileCopy xSourceFile, xDestFile
-    AnalyzeArrowB (xDestFile)
-    Kill (xDestFile)
+    'OutputtoDbgview ("Starting Arrow Bridge Scores")
+    'xSourceFile = "C:\sbbs\xtrn\Abridge\TOPCHARS.ABR"
+    'xDestFile = "C:\temp\TOPCHARS.ABR"
+    'FileCopy xSourceFile, xDestFile
+    'AnalyzeArrowB (xDestFile)
+    'Kill (xDestFile)
    
     ' Arrow Bridge ][ Game Scores
-    OutputtoDbgview ("Starting Arrow Bridge Scores")
-    xSourceFile = "C:\sbbs\xtrn\Abridge2\TOPCHARS.ABR"
-    xDestFile = "C:\temp\TOPCHARS.ABR"
+    'OutputtoDbgview ("Starting Arrow Bridge Scores")
+    'xSourceFile = "C:\sbbs\xtrn\Abridge2\TOPCHARS.ABR"
+    'xDestFile = "C:\temp\TOPCHARS.ABR"
+    'FileCopy xSourceFile, xDestFile
+    'AnalyzeArrowB2 (xDestFile)
+    'Kill (xDestFile)
+   
+    ' Dungeon Master Game Scores
+    '
+    ' Dungeon Master Module First Blood
+    '
+    OutputtoDbgview ("Starting Dungeon Master First Blood Scores ")
+    xSourceFile = "C:\sbbs\xtrn\DM\1stBlood\PLRRANK.ASC"
+    xDestFile = "C:\temp\PLRRANK.ASC"
     FileCopy xSourceFile, xDestFile
-    AnalyzeArrowB2 (xDestFile)
+    dmModName = "FirstBlood"
+    AnalyzeDM (xDestFile)
     Kill (xDestFile)
+    '
+    ' Dungeon Master Module The Books of Blood
+    '
+    OutputtoDbgview ("Starting Dungeon Master The Books of Bloos Scores")
+    xSourceFile = "C:\sbbs\xtrn\DM\Blood\PLRRANK.ASC"
+    xDestFile = "C:\temp\PLRRANK.ASC"
+    FileCopy xSourceFile, xDestFile
+    dmModName = "Book1Blood"
+    AnalyzeDM (xDestFile)
+    Kill (xDestFile)
+    '
+    ' Dungeon Master Module Labyrnth of Blood
+    '
+    OutputtoDbgview ("Starting Dungeon Master The Labyrnth of Blood Scores")
+    xSourceFile = "C:\sbbs\xtrn\DM\Labyrnth\PLRRANK.ASC"
+    xDestFile = "C:\temp\PLRRANK.ASC"
+    FileCopy xSourceFile, xDestFile
+    dmModName = "Labyrnth"
+    AnalyzeDM (xDestFile)
+    Kill (xDestFile)
+    '
+    ' Dungeon Master Legends of the Books of Blood
+    '
+    OutputtoDbgview ("Starting Dungeon Master Legends of the Books of Blood Scores")
+    xSourceFile = "C:\sbbs\xtrn\DM\Legends\PLRRANK.ASC"
+    xDestFile = "C:\temp\PLRRANK.ASC"
+    FileCopy xSourceFile, xDestFile
+    dmModName = "Legends"
+    AnalyzeDM (xDestFile)
+    Kill (xDestFile)
+    
+    
+    
+   End
    
    ' NY2008 Games Scores
     OutputtoDbgview ("Starting NY2008 Scores")
@@ -259,6 +305,70 @@ Public Sub AnalyzeArrowB2(fileName As String)
 End Sub
 
 
+Public Sub AnalyzeDM(fileName As String)
+    
+    OutputtoDbgview ("Begin Analyze Dungeon Master Module " + dmModule)
+    Lines = ""
+    intEmpFileNbr = FreeFile
+
+    Open fileName For Input As #intEmpFileNbr
+    Input #intEmpFileNbr, Line1
+    Input #intEmpFileNbr, Line1
+    Input #intEmpFileNbr, Line1
+    Input #intEmpFileNbr, Line1
+    Input #intEmpFileNbr, Line1
+    Input #intEmpFileNbr, Line1
+    Input #intEmpFileNbr, Line1
+    
+    
+    Do Until EOF(intEmpFileNbr)
+        
+        Input #intEmpFileNbr, Lines
+        OutputtoDbgview ("Line to Analyze: " + Lines)
+        Lines = NormalizeSpaces(Lines)
+        ' Lines = Replace(Lines, " ", ".")
+        ' Debug.Print Lines
+        
+        ' Need to figure out if Two Names for Character Name ???
+        
+    OutputtoDbgview ("Line Normalized to: " + Lines)
+    strArray = Split(Lines, " ")
+    
+     sCharName = strArray(0)
+     sLevel = strArray(1)
+     sKills = strArray(2)
+     sExp = strArray(3)
+     sLastPlayed = strArray(4)
+     sLastPlayed2 = strArray(5)
+     sStatus = strArray(6)
+     
+    lvlArray = Split(sLevel, "/")
+    Plvl = lvlArray(0)
+    Slvl = lvlArray(1)
+    
+    dmLastPlay = sLastPlayed + " " + sLastPlayed2
+    
+        
+    
+    'Here is where we save to the mySQL database
+    Call WriteDMtoMySQL
+    
+    sCharName = ""
+    sLevel = ""
+    Plvl = ""
+    Slvl = ""
+    sKills = ""
+    sExp = ""
+    sLastPlayed = ""
+    sLastPlayed2 = ""
+    dmLastPlay = ""
+    sStatus = ""
+    
+    Loop
+    
+    Close #intEmpFileNbr
+    
+End Sub
 
 
 Public Sub AnalyzeNY2008(fileName As String)
@@ -1075,7 +1185,7 @@ End If
     
 End Sub
 
-Public Sub WriteArrowBtoMySQL()
+Public Sub WriteArrowB2toMySQL()
 
 OutputtoDbgview ("Begin Write to SQL Arrow Bridge")
 Call ConnecttoMYSQL
@@ -1136,6 +1246,103 @@ End If
     Set DBCon = Nothing
     
 End Sub
+
+
+Public Sub WriteDMtoMySQL()
+
+OutputtoDbgview ("Begin Write to SQL Dungeon Master")
+Call ConnecttoMYSQL
+
+Set Rs = New ADODB.Recordset
+Rs.CursorLocation = adUseServer
+Set DBQuery = New ADODB.Recordset
+'have to check sCharName and dmModule are the same
+
+'DBQuery.Open "SELECT Count(*) as RSCount from ny2008 WHERE charname =" & "'" & sCharName & "';", DBCon, adOpenStatic, adLockOptimistic, adCmdText
+DBQuery.Open "Select Count(*) as RSCount from dm Where dmchar=" & "'" & sCharName & "'" & "and dmmodule=" & "'" & dmModName & "';", DBCon, adOpenStatic, adLockOptimistic, adCmdText
+'DBQuery.Open "SELECT Count(*) as RSCount from dm WHERE dmchar=" & "'" & sCharName & "';", DBCon, adOpenStatic, adLockOptimistic, adCmdText
+
+
+' Rs.Open "SELECT * from dm WHERE dmchar =" & "'" & sCharName & "';", DBCon, adOpenDynamic, adLockOptimistic, adCmdText
+Rs.Open "SELECT * from dm Where dmchar=" & "'" & sCharName & "'" & "and dmmodule=" & "'" & dmModName & "';", DBCon, adOpenDynamic, adLockOptimistic, adCmdText
+
+'Executes the query-command and puts the result into Rs (recordset)
+If DBQuery!RSCount = 0 Then
+        
+    Rs.AddNew
+    Rs!dmModule = dmModName
+    Rs!dmchar = sCharName
+    Rs!dmlvl = Plvl
+    Rs!dmsplvl = Slvl
+    Rs!dmkills = sKills
+    Rs!dmexp = sExp
+    Rs!dmlastp = dmLastPlay
+    Rs!dmstatus = sStatus
+              
+              
+    Rs.Update
+    Rs.Close
+        
+Else
+        
+    If Rs!dmModule = dmModName Then
+        'no update
+    Else
+        Rs!dmModule = dmModName
+    End If
+        
+    If Rs!dmchar = sCharName Then
+        'no update
+    Else
+        Rs!dmchar = sCharName
+    End If
+        
+    If Rs!dmlvl = Plvl Then
+        ' no update
+    Else
+        Rs!dmlvl = Plvl
+    End If
+    
+    If Rs!dmsplvl = Slvl Then
+        ' no update
+    Else
+        Rs!dmsplvl = Slvl
+    End If
+      
+    If Rs!dmkills = sKills Then
+        ' no update
+    Else
+        Rs!dmkills = sKills
+    End If
+        
+    If Rs!dmexp = sExp Then
+        'no update
+    Else
+        Rs!dmexp = sExp
+    End If
+    
+    If Rs!dmlastp = dmLastPlay Then
+        ' no update
+    Else
+        Rs!dmlastp = dmLastPlay
+    End If
+        
+    If Rs!dmstatus = sStatus Then
+        ' no update
+    Else
+        Rs!dmstatus = sStatus
+    End If
+        
+    Rs.Update
+    Rs.Close
+                
+End If
+    DBCon.Close
+    Set Rs = Nothing
+    Set DBCon = Nothing
+
+End Sub
+
 
 Public Sub WriteNY2008toMySQL()
 
