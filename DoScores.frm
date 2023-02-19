@@ -61,7 +61,7 @@ Private Sub Form_Load()
     xSourceFile = "C:\sbbs\xtrn\DM\Blood\PLRRANK.ASC"
     xDestFile = "C:\temp\PLRRANK.ASC"
     FileCopy xSourceFile, xDestFile
-    dmModName = "Book1Blood"
+    dmModName = "BooksBlood"
     AnalyzeDM (xDestFile)
     Kill (xDestFile)
     '
@@ -307,7 +307,7 @@ End Sub
 
 Public Sub AnalyzeDM(fileName As String)
     
-    OutputtoDbgview ("Begin Analyze Dungeon Master Module " + dmModule)
+    OutputtoDbgview ("Begin Analyze Dungeon Master Module " + dmModName)
     Lines = ""
     intEmpFileNbr = FreeFile
 
@@ -323,25 +323,33 @@ Public Sub AnalyzeDM(fileName As String)
     
     Do Until EOF(intEmpFileNbr)
         
-        Input #intEmpFileNbr, Lines
-        OutputtoDbgview ("Line to Analyze: " + Lines)
-        Lines = NormalizeSpaces(Lines)
-        ' Lines = Replace(Lines, " ", ".")
-        ' Debug.Print Lines
-        
-        ' Need to figure out if Two Names for Character Name ???
+    Input #intEmpFileNbr, Lines
+    OutputtoDbgview ("Line to Analyze: " + Lines)
+    Lines = NormalizeSpaces(Lines)
+    Lines = Replace(Lines, " ", ".")
         
     OutputtoDbgview ("Line Normalized to: " + Lines)
-    strArray = Split(Lines, " ")
+    strArray = Split(Lines, ".")
     
      sCharName = strArray(0)
      sLevel = strArray(1)
-     sKills = strArray(2)
-     sExp = strArray(3)
-     sLastPlayed = strArray(4)
-     sLastPlayed2 = strArray(5)
-     sStatus = strArray(6)
-     
+     If Not InStr(sLevel, "/") <> 0 Then
+        sCharName = strArray(0) & " " & strArray(1)
+        sLevel = strArray(2)
+        sKills = strArray(3)
+        sExp = strArray(4)
+        sLastPlayed = strArray(5)
+        sLastPlayed2 = strArray(6)
+        sStatus = strArray(7)
+     Else
+        sKills = strArray(2)
+        sExp = strArray(3)
+        sLastPlayed = strArray(4)
+        sLastPlayed2 = strArray(5)
+        sStatus = strArray(6)
+     End If
+
+         
     lvlArray = Split(sLevel, "/")
     Plvl = lvlArray(0)
     Slvl = lvlArray(1)
@@ -1256,14 +1264,9 @@ Call ConnecttoMYSQL
 Set Rs = New ADODB.Recordset
 Rs.CursorLocation = adUseServer
 Set DBQuery = New ADODB.Recordset
+
 'have to check sCharName and dmModule are the same
-
-'DBQuery.Open "SELECT Count(*) as RSCount from ny2008 WHERE charname =" & "'" & sCharName & "';", DBCon, adOpenStatic, adLockOptimistic, adCmdText
 DBQuery.Open "Select Count(*) as RSCount from dm Where dmchar=" & "'" & sCharName & "'" & "and dmmodule=" & "'" & dmModName & "';", DBCon, adOpenStatic, adLockOptimistic, adCmdText
-'DBQuery.Open "SELECT Count(*) as RSCount from dm WHERE dmchar=" & "'" & sCharName & "';", DBCon, adOpenStatic, adLockOptimistic, adCmdText
-
-
-' Rs.Open "SELECT * from dm WHERE dmchar =" & "'" & sCharName & "';", DBCon, adOpenDynamic, adLockOptimistic, adCmdText
 Rs.Open "SELECT * from dm Where dmchar=" & "'" & sCharName & "'" & "and dmmodule=" & "'" & dmModName & "';", DBCon, adOpenDynamic, adLockOptimistic, adCmdText
 
 'Executes the query-command and puts the result into Rs (recordset)
